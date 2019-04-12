@@ -11,7 +11,7 @@
      (atom "resources/reports/templates/"))
 
 (def reports-generated-path
-     (atom "resources/reports/generated/"))
+     (atom "resources/reports/"))
 
 (defn read-template
   "Reads latex template from particular path"
@@ -125,7 +125,7 @@
           [(str
              "cd "
              new-folder)
-           "cp -r ../../templates/images ./"
+           "cp -r ../templates/images ./"
            "pdflatex main_file.tex"
            "pdflatex main_file.tex"]))
       (try

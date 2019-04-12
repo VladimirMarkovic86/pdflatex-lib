@@ -1,4 +1,4 @@
-(defproject org.clojars.vladimirmarkovic86/pdflatex-lib "0.1.0"
+(defproject org.clojars.vladimirmarkovic86/pdflatex-lib "0.1.1"
   :description "PDF LaTeX library"
   :url "http://github.com/VladimirMarkovic86/pdflatex-lib"
   :license {:name "Eclipse Public License"
