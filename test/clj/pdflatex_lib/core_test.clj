@@ -554,3 +554,163 @@
     
    ))
 
+(deftest test-save-temporary-image-and-remove-temporary-images
+  (testing "Test save temporary image and remove temporary images"
+    
+    (let [single-base64-png nil
+          result (save-temporary-image
+                   single-base64-png)]
+      
+      (is
+        (nil?
+          result)
+       )
+      
+      (let [image-name-vector nil
+            remove-output (remove-temporary-images
+                            image-name-vector)]
+        
+        (is
+          (nil?
+            remove-output)
+         )
+        
+       )
+      
+     )
+    
+    (let [single-base64-png "data:image/png;base64,/9j/4AAQSkZJRgABAgAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAcDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDj/Dvhv4lQ/FW6gtZP7L8SyxS3tzPOyCJo3OWYhQyupdgMKGAbsNpIKKKAP//Z"
+          result (save-temporary-image
+                   single-base64-png)]
+      
+      (is
+        (= (cstring/index-of
+             result
+             "image_")
+           0)
+       )
+      
+      (let [image-name-vector [result]
+            remove-output (remove-temporary-images
+                            image-name-vector)]
+        
+        (is
+          (cstring/blank?
+            (:out remove-output))
+         )
+        
+       )
+      
+     )
+    
+    
+    
+   ))
+
+(deftest test-generate-latex-image-and-remove-temporary-images
+  (testing "Test generate latex image and remove temporary images"
+    
+    (let [base64-png nil
+          selected-language nil
+          [string-result
+           images-name-vector] (generate-latex-image
+                                 base64-png
+                                 selected-language)]
+      
+      (is
+        (cstring/blank?
+          string-result)
+       )
+      
+      (is
+        (empty?
+          images-name-vector)
+       )
+      
+     )
+    
+    (let [single-base64-png "data:image/png;base64,/9j/4AAQSkZJRgABAgAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAcDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDj/Dvhv4lQ/FW6gtZP7L8SyxS3tzPOyCJo3OWYhQyupdgMKGAbsNpIKKKAP//Z"
+          base64-png single-base64-png
+          selected-language nil
+          [string-result
+           images-name-vector] (generate-latex-image
+                                 base64-png
+                                 selected-language)
+          compare-result (atom "")]
+      
+      (doseq [image-name images-name-vector]
+        (swap!
+          compare-result
+          str
+          "\n\\includegraphics[width=150mm]{"
+          image-name
+          "}"))
+      
+      (is
+        (= string-result
+           @compare-result)
+       )
+      
+      (is
+        (not
+          (empty?
+            images-name-vector))
+       )
+      
+      (let [image-name-vector images-name-vector
+            remove-output (remove-temporary-images
+                            image-name-vector)]
+        
+        (is
+          (cstring/blank?
+            (:out remove-output))
+         )
+        
+       )
+      
+     )
+    
+    (let [single-base64-png "data:image/png;base64,/9j/4AAQSkZJRgABAgAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAcDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDj/Dvhv4lQ/FW6gtZP7L8SyxS3tzPOyCJo3OWYhQyupdgMKGAbsNpIKKKAP//Z"
+          base64-png [single-base64-png
+                      single-base64-png]
+          selected-language nil
+          [string-result
+           images-name-vector] (generate-latex-image
+                                 base64-png
+                                 selected-language)
+          compare-result (atom "")]
+      
+      (doseq [image-name images-name-vector]
+        (swap!
+          compare-result
+          str
+          "\n\\includegraphics[width=150mm]{"
+          image-name
+          "}"))
+      
+      (is
+        (= string-result
+           @compare-result)
+       )
+      
+      (is
+        (not
+          (empty?
+            images-name-vector))
+       )
+      
+      (let [image-name-vector images-name-vector
+            remove-output (remove-temporary-images
+                            image-name-vector)]
+        
+        (is
+          (cstring/blank?
+            (:out remove-output))
+         )
+        
+       )
+      
+     )
+    
+   ))
+

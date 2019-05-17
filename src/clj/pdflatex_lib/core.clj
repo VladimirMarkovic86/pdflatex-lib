@@ -5,13 +5,17 @@
            [java.text SimpleDateFormat]
            [java.io FileInputStream
                     FileOutputStream
-                    File]))
+                    File]
+           [java.util Base64]))
 
 (def reports-templates-path
      (atom "resources/reports/templates/"))
 
 (def reports-generated-path
      (atom "resources/reports/"))
+
+(def base64-decoder
+     (Base64/Decoder/getDecoder))
 
 (defn read-template
   "Reads latex template from particular path"
@@ -418,4 +422,112 @@
         "\\end{longtable}")
       @entity-data-a)
     ""))
+
+(defn save-temporary-image
+  "Saves temporary image before it uses it in pdflatex template
+   afterwards should be deleted in execute-pdflatex function"
+  [single-base64-png]
+  (when (and single-base64-png
+             (string?
+               single-base64-png))
+    (let [random-number (long
+                          (* (Math/random)
+                             100000000))
+          temporary-image-name (str
+                                 "image_"
+                                 random-number)
+          image-base64 (cstring/replace
+                         single-base64-png
+                         "data:image/png;base64,"
+                         "")
+          image-byte-array (.decode
+                             base64-decoder
+                             image-base64)
+          new-image-insance-path (str
+                                   @reports-generated-path
+                                   "templates/images/"
+                                   temporary-image-name
+                                   ".png")
+          image-os (FileOutputStream.
+                     (File.
+                       new-image-insance-path))]
+      (.write
+        image-os
+        image-byte-array)
+      (.flush
+        image-os)
+      (.close
+        image-os)
+      temporary-image-name))
+ )
+
+(defn generate-latex-image
+  "Generates latex pdf file with image"
+  [base64-png
+   selected-language]
+  (let [string-result (atom "")
+        images-name-vector (atom [])]
+    (when (and base64-png
+               (vector?
+                 base64-png))
+      (doseq [single-base64-png base64-png]
+        (let [temporary-image-name (save-temporary-image
+                                     single-base64-png)]
+          (swap!
+            string-result
+            str
+            "\n\\includegraphics[width=150mm]{"
+            temporary-image-name
+            "}")
+          (swap!
+            images-name-vector
+            conj
+            temporary-image-name))
+       ))
+    (when (and base64-png
+               (string?
+                 base64-png))
+      (let [temporary-image-name (save-temporary-image
+                                   base64-png)]
+        (swap!
+          string-result
+          str
+          "\n\\includegraphics[width=150mm]{"
+          temporary-image-name
+          "}")
+        (swap!
+          images-name-vector
+          conj
+          temporary-image-name))
+     )
+    [@string-result
+     @images-name-vector]))
+
+(defn remove-temporary-images
+  "Removes temporary images"
+  [image-name-vector]
+  (when (and image-name-vector
+             (vector?
+               image-name-vector))
+    (let [remove-output-a (atom "")]
+      (doseq [image-name image-name-vector]
+        (let [tmp-image-insance-path (str
+                                       @reports-generated-path
+                                       "templates/images/"
+                                       image-name
+                                       ".png")
+              remove-output (cljutils/execute-shell-command
+                              (str
+                                "rm -r "
+                                tmp-image-insance-path))]
+          (println
+            remove-output)
+          (swap!
+            remove-output-a
+            str
+            "\n"
+            remove-output))
+       )
+      @remove-output-a))
+ )
 
