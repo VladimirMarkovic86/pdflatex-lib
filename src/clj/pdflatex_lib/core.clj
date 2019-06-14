@@ -163,9 +163,19 @@
      ))
  )
 
+(defn is-cyrillic-fn
+  "Searches text for serbian cyrillic letters"
+  [text]
+  (.find
+    (re-matcher
+      #"(а|б|в|г|д|ђ|е|ж|з|и|ј|к|л|љ|м|н|њ|о|п|р|с|т|ћ|у|ф|х|с|ч|џ|ш|А|Б|В|Г|Д|Ђ|Е|Ж|З|И|Ј|К|Л|Љ|М|Н|Њ|О|П|Р|С|Т|Ћ|У|Ф|Х|Ц|Ч|Џ|Ш)"
+      text))
+ )
+
 (defn escape-special-characters
   "Escape special characters"
-  [template-to-escape]
+  [template-to-escape
+   selected-language]
   (if (and template-to-escape
            (string?
              template-to-escape)
@@ -182,7 +192,8 @@
                               ["{" "\\{"]
                               ["}" "\\}"]
                               ["~" "\\textasciitilde"]
-                              ["^" "\\textasciicircum"]]
+                              ["^" "\\textasciicircum"]
+                              [#"(nolinkurlopenbraces(.+)closedbraces)" "\\\\nolinkurl{$2}"]]
           escaping-template (atom template-to-escape)]
       (doseq [[special-character
                escaped-special-character] special-characters]
@@ -193,7 +204,23 @@
             special-character
             escaped-special-character))
        )
-      @escaping-template)
+      (if (= selected-language
+             "serbian")
+        (if (is-cyrillic-fn
+              @escaping-template)
+          @escaping-template
+          (str
+            "\\secondlanguage{"
+            @escaping-template
+            "}"))
+        (if (is-cyrillic-fn
+              @escaping-template)
+          (str
+            "\\secondlanguage{"
+            @escaping-template
+            "}")
+          @escaping-template))
+     )
     ""))
 
 (defn generate-latex-table
@@ -263,7 +290,11 @@
                                     "black")
               property-label (get
                                labels
-                               property-keyword)]
+                               property-keyword)
+              property-label-escaped (escape-special-characters
+                                       (str
+                                         property-label)
+                                       selected-language)]
           (when (not= i
                       0)
             (swap!
@@ -278,9 +309,7 @@
             "}\\textcolor{"
             header-text-color
             "}{"
-            (escape-special-characters
-              (str
-                property-label))
+            property-label-escaped
             "}}"))
         (when (= (count
                    projection)
@@ -319,7 +348,11 @@
                                             property-value
                                             selected-language)
                                           (str
-                                            property-value))]
+                                            property-value))
+                property-value-escaped (escape-special-characters
+                                         (str
+                                           property-value-formated)
+                                         selected-language)]
             (when (not= i
                         0)
               (swap!
@@ -329,10 +362,7 @@
             (swap!
               table-data-a
               str
-              (escape-special-characters
-                (str
-                  property-value-formated))
-             ))
+              property-value-escaped))
           (when (= (count
                      projection)
                    (inc
@@ -348,6 +378,156 @@
         "\n"
         "\\end{longtable}")
       @table-data-a)
+    ""))
+
+(defn generate-latex-card-table
+  "Generates latex card table"
+  [table-data
+   {projection :projection
+    labels :labels
+    columns :columns
+    card-columns :card-columns}
+   selected-language]
+  (if (and table-data
+           (vector?
+             table-data)
+           projection
+           (vector?
+             projection)
+           labels
+           (map?
+             labels)
+           card-columns
+           (number?
+             card-columns))
+    (let [card-data-a (atom "\\begin{longtable}{ ")
+          itr (atom 1)]
+      (case card-columns
+        1 (swap!
+            card-data-a
+            str
+            "R{160mm} } \n")
+        2 (swap!
+            card-data-a
+            str
+            "R{80mm} R{80mm} } \n")
+        3 (swap!
+            card-data-a
+            str
+            "R{53mm} R{53mm} R{53mm} } \n")
+        4 (swap!
+            card-data-a
+            str
+            "R{40mm} R{40mm} R{40mm} R{40mm} } \n")
+        5 (swap!
+            card-data-a
+            str
+            "R{32mm} R{32mm} R{32mm} R{32mm} R{32mm} } \n")
+        (swap!
+          card-data-a
+          str
+          "R{160mm} } \n"))
+      (swap!
+        card-data-a
+        str
+        "\\multicolumn{"
+        card-columns
+        "}{c}{\\cellcolor{lightblue}} \\\\\n"
+        "\\endhead\n")
+      (doseq [card-data table-data]
+        (let [card-column-width (case card-columns
+                                  1 "75"
+                                  2 "36"
+                                  3 "22"
+                                  4 "16"
+                                  5 "12"
+                                  "75")]
+          (swap!
+            card-data-a
+            str
+            "\\begin{tabular}{ p{"
+            card-column-width
+            "mm} p{"
+            card-column-width
+            "mm} } \n"
+            "  & \\\\\n"
+            "\\multicolumn{2}{c}{\\cellcolor{lightblue}} \\\\\n"
+            "\\hline\n")
+          (dotimes [i (count
+                        projection)]
+            (let [property-keyword (get
+                                     projection
+                                     i)
+                  column-config (get
+                                  columns
+                                  property-keyword)
+                  data-format-fn (:data-format-fn column-config)
+                  property-label (get
+                                   labels
+                                   property-keyword)
+                  property-label-escaped (escape-special-characters
+                                           (str
+                                             property-label)
+                                           selected-language)
+                  property-value (get
+                                   card-data
+                                   property-keyword)
+                  property-value-formated (if (and data-format-fn
+                                                   (fn?
+                                                     data-format-fn))
+                                            (data-format-fn
+                                              property-value
+                                              selected-language)
+                                            (str
+                                              property-value))
+                  property-value-escaped (escape-special-characters
+                                           (str
+                                             property-value-formated)
+                                           selected-language)
+                  font-size (case card-columns
+                              1 "normalsize"
+                              2 "normalsize"
+                              3 "normalsize"
+                              4 "small"
+                              5 "footnotesize"
+                              "normalsize")]
+              (swap!
+                card-data-a
+                str
+                "\\multicolumn{1}{| L{"
+                card-column-width
+                "mm}}{\\"
+                font-size
+                "{"
+                property-label-escaped
+                "}} &\n"
+                "\\multicolumn{1}{R{"
+                card-column-width
+                "mm} |}{\\"
+                font-size
+                "{"
+                property-value-escaped
+                "}} \\\\\n"
+                "\\hline\n"))
+           ))
+        (swap!
+          card-data-a
+          str
+          "\\end{tabular}\n"
+          (if (= (mod @itr
+                      card-columns)
+                 0)
+            "\\\\\n"
+            "\n & \n"))
+        (swap!
+          itr
+          inc))
+      (swap!
+        card-data-a
+        str
+        "\n"
+        "\\end{longtable}")
+      @card-data-a)
     ""))
 
 (defn generate-latex-single-entity
@@ -386,6 +566,10 @@
               property-label (get
                                labels
                                property-keyword)
+              property-label-escaped (escape-special-characters
+                                       (str
+                                         property-label)
+                                       selected-language)
               property-value (get
                                entity-data
                                property-keyword)
@@ -396,7 +580,11 @@
                                           property-value
                                           selected-language)
                                         (str
-                                          property-value))]
+                                          property-value))
+              property-value-escaped (escape-special-characters
+                                       (str
+                                         property-value-formated)
+                                       selected-language)]
           (swap!
             entity-data-a
             str
@@ -405,14 +593,10 @@
             "}\\textcolor{"
             header-text-color
             "}{"
-            (escape-special-characters
-              (str
-                property-label))
+            property-label-escaped
             "}"
             " & "
-            (escape-special-characters
-              (str
-                property-value-formated))
+            property-value-escaped
             " \\\\\n"))
        )
       (swap!

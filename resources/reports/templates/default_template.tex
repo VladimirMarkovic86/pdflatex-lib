@@ -12,11 +12,12 @@
 \graphicspath{ {images/} }
 \usepackage[table]{xcolor}
 \usepackage[utf8]{inputenc}
-\usepackage[main=english,serbian]{babel}
+\usepackage[main=english,serbian,serbianc]{babel}
 \usepackage[pdfencoding=auto,
             psdextra,]{hyperref}
 \usepackage{datetime}
 \usepackage{navigator}
+\newcommand\secondlanguage[1]{\foreignlanguage{serbianc}{#1}}
 
 \title{Vladimir Marković - Web developer}
 \author{Vladimir Marković}
@@ -25,6 +26,7 @@
 \definecolor{lightblue}{HTML}{0088CC}
 \definecolor{orangered}{HTML}{FF4500}
 \definecolor{lightgray}{HTML}{F3F3F3}
+\definecolor{gray}{HTML}{CECFD5}
 \definecolor{darkgray}{HTML}{808080}
 
 \hypersetup{
@@ -47,6 +49,8 @@
 \begin{document}
 
 \sffamily
+
+\arrayrulecolor{gray}
 
 \vspace{0mm}
 \setlength{\parindent}{1mm}

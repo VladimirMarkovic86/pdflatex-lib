@@ -239,8 +239,10 @@
   (testing "Test escape special characters"
     
     (let [template-to-escape nil
+          selected-language nil
           result (escape-special-characters
-                   template-to-escape)]
+                   template-to-escape
+                   selected-language)]
       
       (is
         (not
@@ -261,8 +263,10 @@
      )
     
     (let [template-to-escape ""
+          selected-language ""
           result (escape-special-characters
-                   template-to-escape)]
+                   template-to-escape
+                   selected-language)]
       
       (is
         (not
@@ -283,8 +287,10 @@
      )
     
     (let [template-to-escape "test"
+          selected-language "english"
           result (escape-special-characters
-                   template-to-escape)]
+                   template-to-escape
+                   selected-language)]
       
       (is
         (not
@@ -305,8 +311,10 @@
      )
     
     (let [template-to-escape "\\ & % $ # _ { } ~ ^"
+          selected-language "english"
           result (escape-special-characters
-                   template-to-escape)]
+                   template-to-escape
+                   selected-language)]
       
       (is
         (not
@@ -435,6 +443,122 @@
       (is
         (= result
            "\\begin{longtable}{  L{70mm}  L{70mm}  }\n\\multicolumn{1}{c}{\\cellcolor{white}\\textcolor{black}{Header label 1}} & \\multicolumn{1}{c}{\\cellcolor{white}\\textcolor{black}{Header label 2}}\\\\\n\\endhead\nTable data 1 & Table data 2\\\\\nTable data 3 & Table data 4\\\\\n\n\\end{longtable}")
+       )
+      
+     )
+    
+   ))
+
+(deftest test-generate-latex-card-table
+  (testing "Test generate latex card table"
+    
+    (let [table-data nil
+          reports-config nil
+          selected-language nil
+          result (generate-latex-card-table
+                   table-data
+                   reports-config
+                   selected-language)]
+      
+      (is
+        (not
+          (nil?
+            result))
+       )
+      
+      (is
+        (string?
+          result)
+       )
+      
+      (is
+        (cstring/blank?
+          result)
+       )
+      
+     )
+    
+    (let [table-data [{:test 1}]
+          reports-config {:projection [:test1]
+                          :labels {:test2 "label"}
+                          :card-columns 1}
+          selected-language nil
+          result (generate-latex-card-table
+                   table-data
+                   reports-config
+                   selected-language)]
+      
+      (is
+        (not
+          (nil?
+            result))
+       )
+      
+      (is
+        (string?
+          result)
+       )
+      
+      (is
+        (= result
+           "\\begin{longtable}{ R{160mm} } \n\\multicolumn{1}{c}{\\cellcolor{lightblue}} \\\\\n\\endhead\n\\begin{tabular}{ p{75mm} p{75mm} } \n  & \\\\\n\\multicolumn{2}{c}{\\cellcolor{lightblue}} \\\\\n\\hline\n\\multicolumn{1}{| L{75mm}}{\\normalsize{}} &\n\\multicolumn{1}{R{75mm} |}{\\normalsize{}} \\\\\n\\hline\n\\end{tabular}\n\\\\\n\n\\end{longtable}")
+       )
+      
+     )
+    
+    (let [table-data [{:test "Table data"}]
+          reports-config {:projection [:test]
+                          :labels {:test "Header label"}
+                          :card-columns 2}
+          selected-language nil
+          result (generate-latex-card-table
+                   table-data
+                   reports-config
+                   selected-language)]
+      
+      (is
+        (not
+          (nil?
+            result))
+       )
+      
+      (is
+        (string?
+          result)
+       )
+      
+      (is
+        (= result
+           "\\begin{longtable}{ R{80mm} R{80mm} } \n\\multicolumn{2}{c}{\\cellcolor{lightblue}} \\\\\n\\endhead\n\\begin{tabular}{ p{36mm} p{36mm} } \n  & \\\\\n\\multicolumn{2}{c}{\\cellcolor{lightblue}} \\\\\n\\hline\n\\multicolumn{1}{| L{36mm}}{\\normalsize{Header label}} &\n\\multicolumn{1}{R{36mm} |}{\\normalsize{Table data}} \\\\\n\\hline\n\\end{tabular}\n\n & \n\n\\end{longtable}")
+       )
+      
+     )
+    
+    (let [table-data [{:test1 "Table data 1" :test2 "Table data 2"}
+                      {:test1 "Table data 3" :test2 "Table data 4"}]
+          reports-config {:projection [:test1 :test2]
+                          :labels {:test1 "Header label 1" :test2 "Header label 2"}
+                          :card-columns 2}
+          selected-language nil
+          result (generate-latex-card-table
+                   table-data
+                   reports-config
+                   selected-language)]
+      
+      (is
+        (not
+          (nil?
+            result))
+       )
+      
+      (is
+        (string?
+          result)
+       )
+      
+      (is
+        (= result
+           "\\begin{longtable}{ R{80mm} R{80mm} } \n\\multicolumn{2}{c}{\\cellcolor{lightblue}} \\\\\n\\endhead\n\\begin{tabular}{ p{36mm} p{36mm} } \n  & \\\\\n\\multicolumn{2}{c}{\\cellcolor{lightblue}} \\\\\n\\hline\n\\multicolumn{1}{| L{36mm}}{\\normalsize{Header label 1}} &\n\\multicolumn{1}{R{36mm} |}{\\normalsize{Table data 1}} \\\\\n\\hline\n\\multicolumn{1}{| L{36mm}}{\\normalsize{Header label 2}} &\n\\multicolumn{1}{R{36mm} |}{\\normalsize{Table data 2}} \\\\\n\\hline\n\\end{tabular}\n\n & \n\\begin{tabular}{ p{36mm} p{36mm} } \n  & \\\\\n\\multicolumn{2}{c}{\\cellcolor{lightblue}} \\\\\n\\hline\n\\multicolumn{1}{| L{36mm}}{\\normalsize{Header label 1}} &\n\\multicolumn{1}{R{36mm} |}{\\normalsize{Table data 3}} \\\\\n\\hline\n\\multicolumn{1}{| L{36mm}}{\\normalsize{Header label 2}} &\n\\multicolumn{1}{R{36mm} |}{\\normalsize{Table data 4}} \\\\\n\\hline\n\\end{tabular}\n\\\\\n\n\\end{longtable}")
        )
       
      )
